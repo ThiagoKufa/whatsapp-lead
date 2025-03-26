@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- lembre de entrar backend/ para instalar as dependências do backend
+- lembre de entrar frontend/ para instalar as dependências do frontend
+
+-backend em golang, chi, postgre, redis utilize sempre o log de backend\internal\logger\logger.go
+-frontend em React, typescript, zod, axios, React Hook Form e https://mui.com/material-ui/getting-started/
