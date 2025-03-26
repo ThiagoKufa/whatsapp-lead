@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 
+// Certifique-se de que a URL está correta para a API
 const API_URL = 'http://localhost:8080/api';
 
 export const api = axios.create({
@@ -7,7 +8,12 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Importante para manter cookies de sessão
+  timeout: 10000, // Timeout para evitar problemas de resposta lenta
 });
+
+// Log para debug das requisições
+const isDevelopment = import.meta.env.MODE === 'development';
 
 export const setupInterceptors = (
   getToken: () => string | null,
@@ -21,6 +27,11 @@ export const setupInterceptors = (
       
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
+        
+        if (isDevelopment) {
+          console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, 
+            { headers: config.headers, data: config.data });
+        }
       }
       
       return config;
@@ -30,8 +41,17 @@ export const setupInterceptors = (
 
   // Interceptar respostas
   api.interceptors.response.use(
-    (response: AxiosResponse) => response,
+    (response: AxiosResponse) => {
+      if (isDevelopment) {
+        console.log(`[API Response] ${response.status} ${response.config.url}`, response.data);
+      }
+      return response;
+    },
     async (error: AxiosError) => {
+      if (isDevelopment) {
+        console.error(`[API Error] ${error.response?.status} ${error.config?.url}`, error);
+      }
+
       const originalRequest = error.config as InternalAxiosRequestConfig;
       
       // Se o erro for 401 (Unauthorized) e não estivermos na rota de refresh

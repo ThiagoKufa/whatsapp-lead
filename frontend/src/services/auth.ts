@@ -36,7 +36,17 @@ export const authService = {
   },
 
   async getMe(): Promise<User> {
-    const response = await api.get<User>('/me');
-    return response.data;
+    try {
+      const response = await api.get<User>('/me');
+      
+      if (!response.data) {
+        throw new Error('Resposta vazia do servidor');
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar informações do usuário:', error);
+      throw error;
+    }
   }
 }; 

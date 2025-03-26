@@ -165,17 +165,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const storedUser = localStorage.getItem(USER_KEY);
 
       if (storedToken && storedRefreshToken && storedExpiresIn && storedUser) {
+        // Configura o token no cabeçalho do Axios
         api.defaults.headers.common.Authorization = `Bearer ${storedToken}`;
         
-        setState({
-          token: storedToken,
-          refreshToken: storedRefreshToken,
-          expiresIn: parseInt(storedExpiresIn, 10),
-          user: JSON.parse(storedUser),
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-        });
+        try {
+          // Valida o token fazendo uma chamada ao endpoint /me
+          const userData = await authService.getMe();
+          
+          // Se chegou aqui, o token é válido
+          setState({
+            token: storedToken,
+            refreshToken: storedRefreshToken,
+            expiresIn: parseInt(storedExpiresIn, 10),
+            user: userData, // Usa os dados atualizados do usuário
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        } catch (error) {
+          console.error('Token inválido ou expirado:', error);
+          
+          // Tenta renovar o token
+          try {
+            // Se o token estiver expirado, tenta obter um novo com o refreshToken
+            const newToken = await refreshToken();
+            
+            if (!newToken) {
+              // Se não conseguir renovar, faz logout
+              clearAuthData();
+            }
+          } catch {
+            // Se falhar ao renovar o token, limpa os dados
+            clearAuthData();
+          }
+        }
       } else {
         setState(prev => ({ ...prev, isLoading: false }));
       }

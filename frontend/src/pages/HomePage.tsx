@@ -43,6 +43,9 @@ export const HomePage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
+  // Depuração para verificar se os dados do usuário estão corretos
+  console.log('Dados do usuário na HomePage:', user);
+
   const handleLogout = async () => {
     await logout();
   };
